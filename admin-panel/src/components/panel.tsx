@@ -1,0 +1,14 @@
+"use client";
+import Link from "next/link";
+import Image from "next/image";
+import { usePathname, useRouter } from "next/navigation";
+import { useState } from "react";
+const nav = [{ href: "/dashboard", label: "Overview", icon: "◫" }, { href: "/users", label: "Users", icon: "♙" }, { href: "/queries", label: "Query logs", icon: "☷" }, { href: "/sessions", label: "Sessions", icon: "◷" }];
+export function Panel({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname(); const router = useRouter(); const [menu, setMenu] = useState(false);
+  async function logout() { try { await fetch("/api/v1/admin/auth/logout", { method: "POST", credentials: "same-origin" }); } finally { router.replace("/login"); } }
+  return <div className="shell"><aside className={`sidebar ${menu ? "sidebar-open" : ""}`}><Link className="brand" href="/dashboard"><Image src="/mysathi-logo.png" alt="MySathi" width={1280} height={783} className="brand-logo" priority/><span className="brand-sub">ADMIN CONSOLE</span></Link><div className="nav-label">WORKSPACE</div><nav>{nav.map(item => <Link key={item.href} className={`nav-link ${pathname.startsWith(item.href) ? "active" : ""}`} href={item.href} onClick={() => setMenu(false)}><span className="nav-icon">{item.icon}</span>{item.label}</Link>)}</nav><div className="sidebar-bottom"><div className="secure-note"><span className="online-dot"/>Local AI server <span className="secure-lock">⌑</span></div><button className="logout" onClick={logout}><span>↪</span> Sign out</button><div className="admin-mini"><span className="avatar">A</span><span><b>Administrator</b><small>Admin account</small></span><span className="dots">···</span></div></div></aside><main className="main"><header className="topbar"><button className="mobile-menu" onClick={() => setMenu(!menu)} aria-label="Toggle menu">☰</button><div className="crumb">MySathi <span>/</span> <b>{nav.find(n => pathname.startsWith(n.href))?.label ?? "Admin"}</b></div><div className="top-right"><span className="status-pill"><i/> API connection</span><span className="avatar small-avatar">A</span></div></header><div className="content">{children}</div></main></div>;
+}
+export function PageTitle({ eyebrow, title, description, action }: { eyebrow?: string; title: string; description?: string; action?: React.ReactNode }) { return <div className="page-title"><div>{eyebrow && <div className="eyebrow">{eyebrow}</div>}<h1>{title}</h1>{description && <p>{description}</p>}</div>{action}</div>; }
+export function ErrorBox({ message, retry }: { message: string; retry?: () => void }) { return <div className="error-box"><span className="error-icon">!</span><div><b>Couldn’t load this data</b><p>{message}</p>{retry && <button className="text-button" onClick={retry}>Try again</button>}</div></div>; }
+export function Empty({ title, detail }: { title: string; detail: string }) { return <div className="empty"><span>⌕</span><b>{title}</b><p>{detail}</p></div>; }
